@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import qrcode
@@ -5,10 +6,11 @@ from fpdf import FPDF
 
 from db.model import Qrcodes
 
-pdf = FPDF()
+strt = datetime.datetime.now()
 
-for i in range(1, 1051):
-    data = f"https://t.me/ScanerQrCodeBot?start={i}"
+pdf = FPDF()
+for i in range(1, 10051):
+    data = f"https://t.me/BOONVI_bot?start={i}"
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
     qr.add_data(data)
     qr.make(fit=True)
@@ -21,3 +23,4 @@ for i in range(1, 1051):
     os.remove(qr_filename)
 
 pdf.output("qrcodes.pdf", "F")
+print(datetime.datetime.now() - strt)

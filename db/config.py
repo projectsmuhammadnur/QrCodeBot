@@ -1,43 +1,74 @@
-import os
-import psycopg2
-from dotenv import load_dotenv
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime, func
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 
-load_dotenv()
+from utils import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME
+
+Base = declarative_base()
 
 
-class DB:
-    con = psycopg2.connect(
-        dbname=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST'),
-        port=os.getenv("DB_PORT"),
-    )
+class Qrcode(Base):
+    __tablename__ = 'qrcodes'
 
-    cur = con.cursor()
+    id = Column(Integer, primary_key=True)
+    active = Column(Boolean)
 
+    def __init__(self, id, active):
+        self.id = id
+        self.active = active
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(50))
+    name = Column(String(50))
+    phone = Column(String(50))
+    qrcode_id = Column(Integer, ForeignKey('qrcodes.id'))
+    created_at = Column(DateTime, default=func.current_timestamp())
+
+    qrcode = relationship("Qrcode")
+
+
+engine = create_engine(f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}')
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+class QrcodeDAO:
+    def select(self, id):
+        return session.query(Qrcode).filter(Qrcode.id == id).first()
+
+    def insert_into(self, id, active):
+        instance = Qrcode(id=id, active=active)
+        session.add(instance)
+        session.commit()
+
+    def update(self, qrcode_id, **kwargs):
+        instance = session.query(Qrcode).get(qrcode_id)
+        if instance:
+            for key, value in kwargs.items():
+                setattr(instance, key, value)
+            session.commit()
+        else:
+            raise Exception("Qrcode not found")
+
+
+class UserDAO:
     def select(self):
-        fields = ','.join(self.fields) if self.fields else '*'
-        table_name = self.__class__.__name__.lower()
-        query = f"""select {fields} from {table_name}"""
-        self.cur.execute(query)
-        return self.cur
+        return session.query(User).all()
 
-    def insert_into(self, **params):
-        fields = ','.join(params.keys())
-        values = tuple(params.values())
-        table_name = self.__class__.__name__.lower()
-        query = f"""insert into {table_name}({fields}) values ({','.join(['%s'] * len(params))})"""
-        self.cur.execute(query, values)
-        self.con.commit()
+    def insert_into(self, user_id, name, phone, qrcode_id):
+        instance = User(user_id=user_id, name=name, phone=phone, qrcode_id=qrcode_id)
+        session.add(instance)
+        session.commit()
 
-    def update(self, qrcode_id: str, **kwargs):
-        table_name = self.__class__.__name__.lower()
-        f = list(kwargs.keys())
-        f.append(' ')
-        set_fields = " = %s,".join(f).strip(', ')
-        params = list(kwargs.values())
-        params.append(qrcode_id)
-        query = f"""update {table_name} set {set_fields} where id=%s"""
-        self.cur.execute(query, params)
-        self.con.commit()
+    def update(self, user_id, **kwargs):
+        instance = session.query(User).filter_by(user_id=user_id).first()
+        if instance:
+            for key, value in kwargs.items():
+                setattr(instance, key, value)
+            session.commit()
+        else:
+            raise Exception("User not found")
