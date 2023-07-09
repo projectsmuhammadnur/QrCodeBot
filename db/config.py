@@ -37,15 +37,18 @@ session = Session()
 
 
 class QrcodeDAO:
-    def select(self, id):
+    @classmethod
+    async def select(self, id):
         return session.query(Qrcode).filter(Qrcode.id == id).first()
 
-    def insert_into(self, id, active):
+    @classmethod
+    async def insert_into(self, id, active):
         instance = Qrcode(id=id, active=active)
         session.add(instance)
         session.commit()
 
-    def update(self, qrcode_id, **kwargs):
+    @classmethod
+    async def update(self, qrcode_id, **kwargs):
         instance = session.query(Qrcode).get(qrcode_id)
         if instance:
             for key, value in kwargs.items():
@@ -56,15 +59,18 @@ class QrcodeDAO:
 
 
 class UserDAO:
-    def select(self):
+    @classmethod
+    async def select(self):
         return session.query(User).all()
 
-    def insert_into(self, user_id, name, phone, qrcode_id):
+    @classmethod
+    async def insert_into(self, user_id, name, phone, qrcode_id):
         instance = User(user_id=user_id, name=name, phone=phone, qrcode_id=qrcode_id)
         session.add(instance)
         session.commit()
 
-    def update(self, user_id, **kwargs):
+    @classmethod
+    async def update(self, user_id, **kwargs):
         instance = session.query(User).filter_by(user_id=user_id).first()
         if instance:
             for key, value in kwargs.items():
