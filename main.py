@@ -1,16 +1,13 @@
 import logging
 from aiogram import executor
-from sqlalchemy.util import asyncio
 
 from bot.handlers import *
+from sqlalchemy.util import asyncio
 from db import db
 
 
 async def create_all():
     await db.create_all()
-
-
-
 
 
 if __name__ == '__main__':

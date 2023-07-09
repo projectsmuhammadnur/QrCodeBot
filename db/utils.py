@@ -47,6 +47,14 @@ class AbstractClass:
         return object_
 
 
+    @classmethod
+    async def delete(cls):
+        query = sqlalchemy_delete(cls)
+        await db.execute(query)
+        await cls.commit()
+        return True
+
+
 
 class CreatedModel(Base, AbstractClass):
     __abstract__ = True
