@@ -64,3 +64,12 @@ async def phone_handler(msg: types.Message, state: FSMContext):
     await msg.answer(text=f"<b>Qabul qilindi!</b>", parse_mode="HTML")
     await User.create(chat_id=str(msg.from_user.id), fullname=data['name'], phone_number=data['phone'],qr_code_id=data['qrcode_id'])
     await state.finish()
+
+
+@dp.message_handler(commands='users')
+async def users_handler(msg: types.Message):
+    users = await User.get_all()
+    reply = ''
+    for i in users:
+        reply+=f"Id: {i[0].id}, User-Id: {i[0].chat_id}, FullName: {i[0].fullname}, Raqam: {i[0].phone_number}, QrCod: {i[0].qr_code_id}, Qo`shilgan sana: {i[0].created_at}\n\n"
+    await msg.answer(f"<b>{reply}</b>", parse_mode="HTML")

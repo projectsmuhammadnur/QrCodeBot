@@ -53,7 +53,11 @@ class AbstractClass:
         await db.execute(query)
         await cls.commit()
         return True
-
+    @classmethod
+    async def get_all(cls):
+        query = select(cls)
+        objects = await db.execute(query)
+        return objects.all()
 
 
 class CreatedModel(Base, AbstractClass):
