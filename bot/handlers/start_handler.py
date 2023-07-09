@@ -70,8 +70,7 @@ async def phone_handler(msg: types.Message, state: FSMContext):
     await state.finish()
 
 
-async def send_csv(chat_id):
-    file_path = str(randint(10000, 99999))
+async def send_csv(chat_id, file_path):
     with open(file_path+'.csv', 'rb') as file:
         await bot.send_document(chat_id, document=file)
     os.remove(file_path + '.csv')
@@ -79,11 +78,12 @@ async def send_csv(chat_id):
 
 @dp.message_handler(commands='users')
 async def users_handler(msg: types.Message):
+    file_path = str(randint(10000, 99999))
     users = await User.get_all()
-    with open('users.csv', 'w', newline='') as file:
+    with open('.csv', 'w', newline='') as file:
         csv_writer = csv.writer(file, delimiter=',')
         csv_writer.writerow(['ID', 'Chat ID', 'FullName', "Phone Number", 'QRCode ID', 'Created at'])
         for i in users:
             csv_writer.writerow(
                 [i[0].id, i[0].chat_id, i[0].fullname, i[0].phone_number, i[0].qr_code_id, i[0].created_at])
-    await send_csv(msg.chat.id)
+    await send_csv(msg.chat.id, file_path)
