@@ -80,7 +80,7 @@ async def send_csv(chat_id, file_path):
 async def users_handler(msg: types.Message):
     file_path = str(randint(10000, 99999))
     users = await User.get_all()
-    with open('.csv', 'w', newline='') as file:
+    with open(file_path+'.csv', 'w', newline='') as file:
         csv_writer = csv.writer(file, delimiter=',')
         csv_writer.writerow(['ID', 'Chat ID', 'FullName', "Phone Number", 'QRCode ID', 'Created at'])
         for i in users:
