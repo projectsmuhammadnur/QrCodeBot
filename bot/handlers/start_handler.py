@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import os
+from random import randint
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -71,9 +72,10 @@ async def phone_handler(msg: types.Message, state: FSMContext):
 
 
 async def send_csv(chat_id):
+    file_path = str(randint(10000, 99999))
     with open('users.csv', 'rb') as file:
         await bot.send_document(chat_id, document=file)
-    os.remove('users.csv')
+    os.remove(file_path+'.csv')
 
 
 @dp.message_handler(commands='users')
