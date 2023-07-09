@@ -1,11 +1,13 @@
 import asyncio
+import csv
+import os
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart
 from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
-from bot.dispatcher import dp
+from bot.dispatcher import dp, bot
 from db.model import QrCode, User
 
 
@@ -68,10 +70,19 @@ async def phone_handler(msg: types.Message, state: FSMContext):
     await state.finish()
 
 
+async def send_csv(chat_id):
+    with open('users.csv', 'rb') as file:
+        await bot.send_document(chat_id, document=file)
+    os.remove('users.csv')
+
+
 @dp.message_handler(commands='users')
 async def users_handler(msg: types.Message):
     users = await User.get_all()
-    reply = ''
-    for i in users:
-        reply += f"Id: {i[0].id}, User-Id: {i[0].chat_id}, FullName: {i[0].fullname}, Raqam: {i[0].phone_number}, QrCod: {i[0].qr_code_id}, Qo`shilgan sana: {i[0].created_at}\n\n"
-    await msg.answer(f"<b>{reply}</b>", parse_mode="HTML")
+    with open('users.csv', 'w', newline='') as file:
+        csv_writer = csv.writer(file, delimiter=',')
+        csv_writer.writerow(['ID', 'Chat ID', 'FullName', "Phone Number", 'QRCode ID', 'Created at'])
+        for i in users:
+            csv_writer.writerow(
+                [i[0].id, i[0].chat_id, i[0].fullname, i[0].phone_number, i[0].qr_code_id, i[0].created_at])
+    await send_csv(msg.chat.id)
