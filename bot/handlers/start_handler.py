@@ -72,7 +72,7 @@ async def phone_handler(msg: types.Message, state: FSMContext):
 
 async def send_csv(chat_id):
     file_path = str(randint(10000, 99999))
-    with open('users.csv', 'rb') as file:
+    with open(file_path+'.csv', 'rb') as file:
         await bot.send_document(chat_id, document=file)
     os.remove(file_path + '.csv')
 
