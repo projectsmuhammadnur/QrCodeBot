@@ -3,7 +3,7 @@ import asyncio
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from bot.dispatcher import dp
 from db.model import QrCode, User
@@ -62,7 +62,7 @@ async def name_handler(msg: types.Message, state: FSMContext):
 async def phone_handler(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['phone'] = msg.contact.phone_number
-    await msg.answer(text=f"<b>Qabul qilindi!</b>", parse_mode="HTML")
+    await msg.answer(text=f"<b>Qabul qilindi!</b>", parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
     await User.create(chat_id=str(msg.from_user.id), fullname=data['name'], phone_number=data['phone'],
                       qr_code_id=data['qrcode_id'])
     await state.finish()
