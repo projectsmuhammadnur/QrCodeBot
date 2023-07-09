@@ -28,26 +28,25 @@ async def delete_qr(msg: Message):
 
 @dp.message_handler(CommandStart())
 async def start_handler(msg: types.Message, state: FSMContext):
-    if len(msg.text.split()) > 1:
-        deep_user = msg.get_args()
-        if deep_user != "":
-            qr = await QrCode.get(int(deep_user))
+    deep_user = msg.get_args()
+    if deep_user != "":
+        qr = await QrCode.get(int(deep_user))
 
-            if qr[0].active == True:
-                await msg.answer(text=f"<b>Bu QR-code ishlatilgan!</b>", parse_mode="HTML")
-                await state.finish()
-            else:
-                await msg.answer_photo(photo="https://telegra.ph/file/d2a51afb3fab6e7c0c95e.png",
-                                       caption=f"""<b>Assalomu aleykum hurmatli mijoz!
+        if qr[0].active == True:
+            await msg.answer(text=f"<b>Bu QR-code ishlatilgan!</b>", parse_mode="HTML")
+            await state.finish()
+        else:
+            await msg.answer_photo(photo="https://telegra.ph/file/d2a51afb3fab6e7c0c95e.png",
+                                   caption=f"""<b>Assalomu aleykum hurmatli mijoz!
             Ishtirokchiga aylanish uchun ISM SHARIFINGIZNI va TELAFON RAQAMINGIZNI kiriting!
             </b>""",
-                                       parse_mode="HTML")
-                await state.set_state("name")
-                async with state.proxy() as data:
-                    data["qrcode_id"] = deep_user
-                await QrCode.update(int(deep_user), active=True)
-                await msg.answer(text=f"<b>Ro'yhatdan o'tishni boshlimiz 😊</b>", parse_mode="HTML")
-                await msg.answer(text=f"<b>Ismingizni kiriting ✍️:</b>", parse_mode="HTML")
+                                   parse_mode="HTML")
+            await state.set_state("name")
+            async with state.proxy() as data:
+                data["qrcode_id"] = deep_user
+            await QrCode.update(int(deep_user), active=True)
+            await msg.answer(text=f"<b>Ro'yhatdan o'tishni boshlimiz 😊</b>", parse_mode="HTML")
+            await msg.answer(text=f"<b>Ismingizni kiriting ✍️:</b>", parse_mode="HTML")
 
 
 @dp.message_handler(state='name')
@@ -75,7 +74,7 @@ async def send_csv(chat_id):
     file_path = str(randint(10000, 99999))
     with open('users.csv', 'rb') as file:
         await bot.send_document(chat_id, document=file)
-    os.remove(file_path+'.csv')
+    os.remove(file_path + '.csv')
 
 
 @dp.message_handler(commands='users')
