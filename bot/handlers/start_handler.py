@@ -105,28 +105,29 @@ async def advert_handler(msg: types.Message, state: FSMContext):
 
 @dp.message_handler(state='advert', content_types=ContentType.ANY)
 async def get_user_id_for_send_to_user(msg: Message, state: FSMContext):
-    await state.finish()
-    users = await User.get_all()
-    succ = 0
-    fail = 0
-    text = "*Session Started:*"
-    session = await msg.bot.send_message(msg.chat.id, text, 'MarkdownV2')
-    for user in users:
-        try:
-            await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
-                              reply_markup=msg.reply_markup)
-            await sleep(0.05)
-            succ += 1
-        except ChatNotFound:
-            pass
+    if msg.from_user.username in admins:
+        await state.finish()
+        users = await User.get_all()
+        succ = 0
+        fail = 0
+        text = "*Session Started:*"
+        session = await msg.bot.send_message(msg.chat.id, text, 'MarkdownV2')
+        for user in users:
             try:
+                await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
+                                  reply_markup=msg.reply_markup)
+                await sleep(0.05)
+                succ += 1
+            except ChatNotFound:
                 pass
+                try:
+                    pass
+                except Exception:
+                    pass
+                fail += 1
             except Exception:
                 pass
-            fail += 1
-        except Exception:
-            pass
-            fail += 1
-    else:
-        await session.delete()
-        await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
+                fail += 1
+        else:
+            await session.delete()
+            await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
