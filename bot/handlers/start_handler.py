@@ -2,11 +2,13 @@ import asyncio
 import csv
 import os
 from random import randint
+from time import sleep
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, ContentType
+from aiogram.utils.exceptions import ChatNotFound
 
 from bot.dispatcher import dp, bot
 from db.model import QrCode, User
@@ -93,3 +95,38 @@ async def users_handler(msg: types.Message):
                 csv_writer.writerow(
                     [i[0].id, i[0].chat_id, i[0].fullname, i[0].phone_number, i[0].qr_code_id, i[0].created_at])
         await send_csv(msg.chat.id, file_path)
+
+
+@dp.message_handler(commands='advert')
+async def advert_handler(msg: types.Message, state: FSMContext):
+    await state.set_state('advert')
+    await msg.answer("<b>Habarni yuboring!</b>", parse_mode="HTML")
+
+
+@dp.message_handler(state='advert', content_types=ContentType.ANY)
+async def get_user_id_for_send_to_user(msg: Message, state: FSMContext):
+    await state.finish()
+    users = await User.get_all()
+    succ = 0
+    fail = 0
+    text = "*Session Started:*"
+    session = await msg.bot.send_message(msg.chat.id, text, 'MarkdownV2')
+    for user in users:
+        try:
+            await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
+                              reply_markup=msg.reply_markup)
+            await sleep(0.05)
+            succ += 1
+        except ChatNotFound:
+            pass
+            try:
+                pass
+            except Exception:
+                pass
+            fail += 1
+        except Exception:
+            pass
+            fail += 1
+    else:
+        await session.delete()
+        await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
