@@ -46,13 +46,13 @@ class AbstractClass:
         object_ = objects.first()
         return object_
 
-
     @classmethod
     async def delete(cls):
         query = sqlalchemy_delete(cls)
         await db.execute(query)
         await cls.commit()
         return True
+
     @classmethod
     async def get_all(cls):
         query = select(cls)

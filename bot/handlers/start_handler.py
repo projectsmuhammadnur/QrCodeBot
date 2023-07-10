@@ -25,6 +25,7 @@ async def async_range(count):
 @dp.message_handler(commands="restart_qr")
 async def delete_qr(msg: Message):
     await QrCode.delete()
+    await User.delete()
 
     async for i in async_range(10051):
         await QrCode.create(id=i, active=False)
