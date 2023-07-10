@@ -119,17 +119,13 @@ async def get_user_id_for_send_to_user(msg: Message, state: FSMContext):
             await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
                               reply_markup=msg.reply_markup)
             await sleep(0.05)
-            succ += 1
         except ChatNotFound:
             pass
             try:
                 pass
             except Exception:
                 pass
-            fail += 1
         except Exception:
             pass
-            fail += 1
     else:
         await session.delete()
-        await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
