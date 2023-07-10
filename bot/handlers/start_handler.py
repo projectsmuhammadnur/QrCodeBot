@@ -13,8 +13,8 @@ from aiogram.utils.exceptions import ChatNotFound
 from bot.dispatcher import dp, bot
 from db.model import QrCode, User
 
-
 admins = ["abdusamad_nodirovich", "Dilshod_Absaitov", "ruz_9003"]
+
 
 async def async_range(count):
     for i in range(1, count):
@@ -71,14 +71,15 @@ async def phone_handler(msg: types.Message, state: FSMContext):
     await msg.answer(text=f"""<b>Siz BONVI Aksiyasi ishtirokchisi bo’dingiz! Aksiya tugagunga qadar QR-kodingizni tashlab yubormang!
 
 Aksiya 25 sentabr kuni yakunlanadi!
-30 sentabr kuni jonli efirda o’ynaladi, aloqada bo’ling! OMAD!</b>""", parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
+30 sentabr kuni jonli efirda o’ynaladi, aloqada bo’ling! OMAD!</b>""", parse_mode="HTML",
+                     reply_markup=ReplyKeyboardRemove())
     await User.create(chat_id=str(msg.from_user.id), fullname=data['name'], phone_number=data['phone'],
                       qr_code_id=data['qrcode_id'])
     await state.finish()
 
 
 async def send_csv(chat_id, file_path):
-    with open(file_path+'.csv', 'rb') as file:
+    with open(file_path + '.csv', 'rb') as file:
         await bot.send_document(chat_id, document=file)
     os.remove(file_path + '.csv')
 
@@ -88,7 +89,7 @@ async def users_handler(msg: types.Message):
     if msg.from_user.username in admins:
         file_path = str(randint(10000, 99999))
         users = await User.get_all()
-        with open(file_path+'.csv', 'w', newline='') as file:
+        with open(file_path + '.csv', 'w', newline='') as file:
             csv_writer = csv.writer(file, delimiter=',')
             csv_writer.writerow(['ID', 'Chat ID', 'FullName', "Phone Number", 'QRCode ID', 'Created at'])
             for i in users:
@@ -99,35 +100,35 @@ async def users_handler(msg: types.Message):
 
 @dp.message_handler(commands='advert')
 async def advert_handler(msg: types.Message, state: FSMContext):
-    await state.set_state('advert')
-    await msg.answer("<b>Habarni yuboring!</b>", parse_mode="HTML")
+    if msg.from_user.username in admins:
+        await state.set_state('advert')
+        await msg.answer("<b>Habarni yuboring!</b>", parse_mode="HTML")
 
 
 @dp.message_handler(state='advert', content_types=ContentType.ANY)
 async def get_user_id_for_send_to_user(msg: Message, state: FSMContext):
-    if msg.from_user.username in admins:
-        await state.finish()
-        users = await User.get_all()
-        succ = 0
-        fail = 0
-        text = "*Session Started:*"
-        session = await msg.bot.send_message(msg.chat.id, text, 'MarkdownV2')
-        for user in users:
+    await state.finish()
+    users = await User.get_all()
+    succ = 0
+    fail = 0
+    text = "*Session Started:*"
+    session = await msg.bot.send_message(msg.chat.id, text, 'MarkdownV2')
+    for user in users:
+        try:
+            await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
+                              reply_markup=msg.reply_markup)
+            await sleep(0.05)
+            succ += 1
+        except ChatNotFound:
+            pass
             try:
-                await msg.copy_to(user[0].chat_id, msg.caption, caption_entities=msg.caption_entities,
-                                  reply_markup=msg.reply_markup)
-                await sleep(0.05)
-                succ += 1
-            except ChatNotFound:
                 pass
-                try:
-                    pass
-                except Exception:
-                    pass
-                fail += 1
             except Exception:
                 pass
-                fail += 1
-        else:
-            await session.delete()
-            await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
+            fail += 1
+        except Exception:
+            pass
+            fail += 1
+    else:
+        await session.delete()
+        await msg.answer(f"Habar *{succ}*ta userga tarqatildi✅\n*{fail}*ta user botni bloklagan❌", 'MarkdownV2')
