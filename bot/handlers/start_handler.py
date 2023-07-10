@@ -40,7 +40,7 @@ async def start_handler(msg: types.Message, state: FSMContext):
         else:
             await msg.answer_photo(photo="https://telegra.ph/file/d2a51afb3fab6e7c0c95e.png",
                                    caption=f"""<b>Assalomu aleykum hurmatli mijoz!
-            Ishtirokchiga aylanish uchun ISM SHARIFINGIZNI va TELAFON RAQAMINGIZNI kiriting!
+Ishtirokchiga aylanish uchun ISM SHARIFINGIZNI va TELAFON RAQAMINGIZNI kiriting!
             </b>""",
                                    parse_mode="HTML")
             await state.set_state("name")
@@ -66,7 +66,10 @@ async def name_handler(msg: types.Message, state: FSMContext):
 async def phone_handler(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['phone'] = msg.contact.phone_number
-    await msg.answer(text=f"<b>Qabul qilindi!</b>", parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
+    await msg.answer(text=f"""<b>Siz BONVI Aksiyasi ishtirokchisi bo’dingiz! Aksiya tugagunga qadar QR-kodingizni tashlab yubormang!
+
+Aksiya 25 sentabr kuni yakunlanadi!
+30 sentabr kuni jonli efirda o’ynaladi, aloqada bo’ling! OMAD!</b>""", parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
     await User.create(chat_id=str(msg.from_user.id), fullname=data['name'], phone_number=data['phone'],
                       qr_code_id=data['qrcode_id'])
     await state.finish()
