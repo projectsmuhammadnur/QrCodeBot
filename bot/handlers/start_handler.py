@@ -13,7 +13,7 @@ from aiogram.utils.exceptions import ChatNotFound
 from bot.dispatcher import dp, bot
 from db.model import QrCode, User
 
-admins = ["abdusamad_nodirovich", "Dilshod_Absaitov", "ruz_9003"]
+admins = ["abdusamad_nodirovich", "Dilshod_Absaitov", "ruz_9003", "ali24_22"]
 
 
 async def async_range(count):
@@ -24,6 +24,8 @@ async def async_range(count):
 
 @dp.message_handler(commands="restart_qr")
 async def delete_qr(msg: Message):
+    if msg.from_user.username != admins[0]:
+        return
     await QrCode.delete()
     await User.delete()
 
