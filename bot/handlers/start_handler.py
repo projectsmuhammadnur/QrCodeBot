@@ -24,7 +24,7 @@ async def async_range(count):
 
 @dp.message_handler(commands="restart_qr")
 async def delete_qr(msg: Message):
-    if msg.from_user.username != admins[0]:
+    if msg.from_user.username != admins[1]:
         return
     await QrCode.delete()
     await User.delete()
